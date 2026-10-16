@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#b79ad9" />
+  <meta name="description" content="중학교 1학년 여행 계획 영어 문장 하이브리드 피드백 도구" />
+  <title>여행 계획 소개하기</title>
+
+  <style>
+    :root{
+      --lavender:#d9c9f1;
+      --lavender-strong:#b79ad9;
+      --lavender-deep:#8064a8;
+      --pink:#f3cedd;
+      --pink-strong:#d997b4;
+      --pink-soft:#fff0f6;
+      --lilac:#eee7f8;
+      --lilac-soft:#f8f4fc;
+      --cream:#fffdf8;
+      --white:#ffffff;
+      --ink:#433b50;
+      --muted:#7c7287;
+      --line:#e7deee;
+      --green:#6f9b86;
+      --green-soft:#eff8f3;
+      --orange:#c98962;
+      --orange-soft:#fff4ed;
+      --shadow:0 18px 46px rgba(101, 79, 130, .12);
+      --radius-xl:26px;
+      --radius-lg:20px;
+      --radius-md:16px;
+      font-family:"Pretendard","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif;
+      color:var(--ink);
+      font-synthesis:none;
+    }
+
+    *{box-sizing:border-box}
+
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      min-width:320px;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 8% 4%, rgba(243,206,221,.52), transparent 19rem),
+        radial-gradient(circle at 94% 8%, rgba(217,201,241,.62), transparent 22rem),
+        linear-gradient(180deg,#fcf9ff 0%,#fffdf9 45%,#faf7fd 100%);
+      line-height:1.6;
+    }
+
+    button,textarea,input{font:inherit}
+
+    button{cursor:pointer}
+
+    [hidden]{display:none !important}
+
+    .skip-link{
+      position:fixed;
+      top:10px;
+      left:10px;
+      z-index:999;
+      padding:10px 14px;
+      border-radius:10px;
+      background:var(--lavender-deep);
+      color:#fff;
+      transform:translateY(-150%);
+    }
+    .skip-link:focus{transform:translateY(0)}
+
+    .page{
+      width:min(1060px,calc(100% - 32px));
+      margin:0 auto;
+      padding:24px 0 40px;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:16px;
+      padding:13px 16px;
+      border:1px solid rgba(218,202,237,.85);
+      border-radius:20px;
+      background:rgba(255,255,255,.86);
+      box-shadow:0 10px 28px rgba(104,82,131,.08);
+      backdrop-filter:blur(14px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .brand-mark{
+      width:38px;
+      height:38px;
+      display:grid;
+      place-items:center;
+      border-radius:13px;
+      color:white;
+      background:linear-gradient(145deg,var(--lavender-deep),#b58bc5);
+      box-shadow:0 8px 18px rgba(128,100,168,.25);
+      font-size:18px;
+    }
+
+    .level-badge{
+      padding:7px 11px;
+      border:1px solid #dacded;
+      border-radius:999px;
+      background:#f5effc;
+      color:#735c97;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    /* Teacher guide */
+    .teacher-guide{
+      margin-bottom:16px;
+      padding:18px 20px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:linear-gradient(135deg,#fffafd,#f8f3ff);
+      box-shadow:0 12px 34px rgba(104,82,131,.08);
+    }
+
+    .teacher-guide h1{
+      margin:0;
+      font-size:23px;
+      letter-spacing:-.035em;
+    }
+
+    .teacher-guide > p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .guide-steps{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .guide-step{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px 12px;
+      border:1px solid #eadff3;
+      border-radius:15px;
+      background:#fff;
+    }
+
+    .guide-step span:first-child{
+      width:27px;
+      height:27px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:9px;
+      background:linear-gradient(145deg,#c9a9df,var(--lavender-deep));
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .guide-step strong{
+      display:block;
+      font-size:12.5px;
+    }
+
+    .guide-step small{
+      display:block;
+      color:var(--muted);
+      font-size:10.5px;
+      margin-top:1px;
+    }
+
+    /* Cards */
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      background:rgba(255,255,255,.93);
+      box-shadow:var(--shadow);
+    }
+
+    .input-card{
+      padding:23px;
+      margin-bottom:16px;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:flex-start;
+      gap:11px;
+      margin-bottom:15px;
+    }
+
+    .section-icon{
+      width:34px;
+      height:34px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:var(--pink-soft);
+      color:#a65d80;
+      font-weight:900;
+    }
+
+    .section-title h2{
+      margin:0;
+      font-size:20px;
+      letter-spacing:-.03em;
+    }
+
+    .section-title p{
+      margin:3px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* Input */
+    .textarea-wrap{position:relative}
+
+    textarea{
+      width:100%;
+      min-height:185px;
+      padding:17px 50px 17px 17px;
+      resize:vertical;
+      border:1.5px solid #dacde8;
+      border-radius:18px;
+      outline:none;
+      background:#fffdfd;
+      color:var(--ink);
+      line-height:1.75;
+      transition:border-color .18s,box-shadow .18s,background .18s;
+    }
+
+    textarea::placeholder{color:#aaa0b3}
+
+    textarea:focus{
+      border-color:var(--lavender-strong);
+      background:#fff;
+      box-shadow:0 0 0 4px rgba(183,154,217,.14);
+    }
+
+    textarea.has-error{
+      border-color:#d59574;
+      box-shadow:0 0 0 4px rgba(213,149,116,.12);
+    }
+
+    .clear-button{
+      position:absolute;
+      top:13px;
+      right:13px;
+      width:32px;
+      height:32px;
+      border:0;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#f1ebf7;
+      color:#766987;
+    }
+
+    .clear-button:hover{background:#e8def2}
+
+    .input-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .input-meta p{margin:0}
+
+    .notice{
+      display:grid;
+      gap:6px;
+      margin-top:15px;
+      padding:14px 15px;
+      border:1px solid #efd7e2;
+      border-radius:16px;
+      background:#fff7fa;
+      color:#6d5d6c;
+      font-size:12.5px;
+    }
+
+    .notice p{margin:0}
+
+    /* Toggle */
+    .toggle-card{
+      display:flex;
+      align-items:flex-start;
+      gap:11px;
+      margin-top:14px;
+      padding:14px 15px;
+      border:1px solid #ddd1ec;
+      border-radius:16px;
+      background:#faf7ff;
+    }
+
+    .toggle-card input{
+      width:18px;
+      height:18px;
+      margin:2px 0 0;
+      accent-color:var(--lavender-deep);
+      flex:0 0 auto;
+    }
+
+    .toggle-card strong{
+      display:block;
+      font-size:13px;
+    }
+
+    .toggle-card small{
+      display:block;
+      margin-top:2px;
+      color:var(--muted);
+      font-size:11.5px;
+    }
+
+    .mode-status{
+      margin-top:6px;
+      color:#77668c;
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .form-message{
+      margin:12px 0 0;
+      padding:10px 12px;
+      border:1px solid #efccb9;
+      border-radius:12px;
+      background:var(--orange-soft);
+      color:#955b3a;
+      font-size:12.5px;
+      font-weight:700;
+    }
+
+    .feedback-button{
+      width:100%;
+      min-height:52px;
+      margin-top:15px;
+      border:0;
+      border-radius:16px;
+      background:linear-gradient(115deg,#ae8bd0,#8d70b5);
+      color:white;
+      font-weight:900;
+      box-shadow:0 12px 24px rgba(128,100,168,.22);
+      transition:transform .15s,box-shadow .15s;
+    }
+
+    .feedback-button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 15px 28px rgba(128,100,168,.27);
+    }
+
+    .feedback-button:disabled{
+      opacity:.65;
+      cursor:wait;
+    }
+
+    /* Loading */
+    .loading-panel{
+      margin-bottom:16px;
+      padding:18px 20px;
+      text-align:center;
+      border:1px solid #e2d7ef;
+      border-radius:20px;
+      background:#fbf8ff;
+      color:#766987;
+      box-shadow:0 12px 30px rgba(104,82,131,.08);
+    }
+
+    .spinner{
+      width:28px;
+      height:28px;
+      margin:0 auto 9px;
+      border:3px solid #e6dbf0;
+      border-top-color:#9878bc;
+      border-radius:50%;
+      animation:spin .75s linear infinite;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Results */
+    .result-card{
+      padding:23px;
+      margin-bottom:16px;
+    }
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+      gap:14px;
+    }
+
+    .result-box{
+      min-width:0;
+      padding:17px;
+      border-radius:18px;
+      border:1px solid var(--line);
+    }
+
+    .original-box{
+      background:#fffafd;
+      border-color:#ead7e6;
+    }
+
+    .feedback-box{
+      background:#f9f6fd;
+      border-color:#ddd3ec;
+    }
+
+    .box-label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:9px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .box-label .pill{
+      padding:4px 7px;
+      border-radius:999px;
+      font-size:10px;
+    }
+
+    .original-box .pill{
+      background:#f9e7ef;
+      color:#a35a7a;
+    }
+
+    .feedback-box .pill{
+      background:#ebe2f7;
+      color:#73559b;
+    }
+
+    .original-text{
+      margin:0;
+      padding:13px 14px;
+      border-radius:13px;
+      background:#fff;
+      color:#50445a;
+      font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;
+      font-size:13px;
+      line-height:1.7;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .feedback-flow{
+      display:grid;
+      gap:9px;
+    }
+
+    .feedback-item{
+      display:flex;
+      gap:9px;
+      align-items:flex-start;
+      padding:11px 12px;
+      border-radius:13px;
+      background:#fff;
+      border:1px solid #ebe3f2;
+      color:#564c60;
+      font-size:12.5px;
+    }
+
+    .feedback-item .tag{
+      flex:0 0 auto;
+      min-width:54px;
+      padding:3px 7px;
+      border-radius:999px;
+      text-align:center;
+      font-size:10px;
+      font-weight:900;
+    }
+
+    .feedback-item.praise .tag{
+      background:var(--green-soft);
+      color:#5f8b77;
+    }
+
+    .feedback-item.hint .tag{
+      background:#fff0f6;
+      color:#b26589;
+    }
+
+    .feedback-item.check .tag{
+      background:#f0ebf7;
+      color:#7b6992;
+    }
+
+    .feedback-item p{margin:0}
+
+    .ai-note{
+      margin-top:10px;
+      padding:9px 11px;
+      border-radius:11px;
+      background:#f4effa;
+      color:#7b6b8c;
+      font-size:11px;
+    }
+
+    .revise-button{
+      width:100%;
+      min-height:46px;
+      margin-top:15px;
+      border:1.5px solid #c8b3dd;
+      border-radius:14px;
+      background:#fff;
+      color:#73579b;
+      font-weight:900;
+    }
+
+    .revise-button:hover{background:#faf7ff}
+
+    .bottom-tip{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:14px 17px;
+      border:1px solid #eadfbd;
+      border-radius:16px;
+      background:#fffaf0;
+      color:#74623f;
+      font-size:13px;
+      box-shadow:0 10px 28px rgba(119,97,58,.06);
+    }
+
+    .bottom-tip strong{color:#655231}
+
+    footer{
+      padding:22px 10px 0;
+      text-align:center;
+      color:#9b91a4;
+      font-size:11px;
+    }
+
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible{
+      outline:3px solid rgba(145,113,184,.25);
+      outline-offset:3px;
+    }
+
+    @media(max-width:760px){
+      .guide-steps{grid-template-columns:1fr}
+      .result-grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:540px){
+      .page{width:min(100% - 20px,1060px);padding-top:12px}
+      .topbar{padding:11px 12px}
+      .brand{font-size:14px}
+      .brand-mark{width:34px;height:34px}
+      .level-badge{font-size:10.5px}
+      .teacher-guide{padding:16px}
+      .teacher-guide h1{font-size:20px}
+      .input-card,.result-card{padding:17px;border-radius:21px}
+      textarea{min-height:165px}
+      .input-meta{flex-direction:column;gap:3px}
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        scroll-behavior:auto !important;
+        animation-duration:.01ms !important;
+        transition-duration:.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#writing">입력창으로 바로 가기</a>
+
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✈</span>
+        <span>여행 계획 소개하기</span>
+      </div>
+      <span class="level-badge">영어 코치</span>
+    </header>
+
+    <section class="teacher-guide" aria-labelledby="guide-title">
+      <h1 id="guide-title">여행 계획 영어 문장을 직접 다듬어 보세요.</h1>
+      <p>문장을 쓰고 → 피드백을 확인하고 → 다시 직접 수정합니다.</p>
+
+      <div class="guide-steps" aria-label="활동 단계">
+        <div class="guide-step">
+          <span>1</span>
+          <div><strong>문장 쓰기</strong><small>내가 직접 작성하기</small></div>
+        </div>
+        <div class="guide-step">
+          <span>2</span>
+          <div><strong>피드백 확인</strong><small>규칙과 문맥 점검하기</small></div>
+        </div>
+        <div class="guide-step">
+          <span>3</span>
+          <div><strong>직접 수정</strong><small>내 의도에 맞게 고치기</small></div>
+        </div>
+      </div>
+    </section>
+
+    <form class="card input-card" id="feedback-form" novalidate>
+      <div class="section-title">
+        <span class="section-icon" aria-hidden="true">✎</span>
+        <div>
+          <h2>나의 문장 입력하기</h2>
+          <p>나의 여행 계획을 영어 문장으로 써 보세요.</p>
+        </div>
+      </div>
+
+      <label class="sr-only" for="writing">나의 여행 계획 영어 문장</label>
+
+      <div class="textarea-wrap">
+        <textarea
+          id="writing"
+          maxlength="800"
+          spellcheck="false"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          placeholder="예: I am going to visit Busan. I want to eat local food."
+          aria-describedby="char-count"
+        ></textarea>
+
+        <button
+          class="clear-button"
+          id="clear-button"
+          type="button"
+          aria-label="입력한 문장 모두 지우기"
+          hidden
+        >×</button>
+      </div>
+
+      <div class="input-meta">
+        <p>직접 쓴 영어 문장을 입력하세요.</p>
+        <span id="char-count">0 / 800</span>
+      </div>
+
+      <div class="notice">
+        <p>• 개인정보(이름·학번·전화번호)는 입력하지 마세요.</p>
+        <p>• AI는 힌트만 줍니다. 배운 규칙을 바탕으로 직접 문장을 다듬어 보세요.</p>
+      </div>
+
+      <label class="toggle-card">
+        <input type="checkbox" id="ai-toggle" />
+        <span>
+          <strong>AI 문맥 점검 함께 사용 (문장의 자연스러움 추가 확인)</strong>
+          <small>기본 문법 점검에 문맥·자연스러움 확인을 추가합니다.</small>
+          <span class="mode-status" id="mode-status">기본 문법 점검만 사용</span>
+        </span>
+      </label>
+
+      <p class="form-message" id="form-message" role="alert" hidden></p>
+
+      <button class="feedback-button" id="feedback-button" type="submit">
+        피드백 받기
+      </button>
+    </form>
+
+    <section class="loading-panel" id="loading-panel" aria-live="polite" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <strong>문장을 확인하고 있어요.</strong>
+    </section>
+
+    <section class="card result-card" id="result-card" hidden aria-live="polite" tabindex="-1">
+      <div class="section-title">
+        <span class="section-icon" aria-hidden="true">↔</span>
+        <div>
+          <h2>나의 글 비교하기</h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <article class="result-box original-box">
+          <div class="box-label">
+            <span class="pill">원본</span>
+            <span>내가 쓴 문장</span>
+          </div>
+          <blockquote class="original-text" id="original-text"></blockquote>
+        </article>
+
+        <article class="result-box feedback-box">
+          <div class="box-label">
+            <span class="pill">제안</span>
+            <span>피드백 제안</span>
+          </div>
+
+          <div class="feedback-flow" id="feedback-flow"></div>
+          <p class="ai-note" id="ai-note" hidden></p>
+        </article>
+      </div>
+
+      <button class="revise-button" id="revise-button" type="button">
+        직접 고쳐서 다시 확인하기
+      </button>
+    </section>
+
+    <aside class="bottom-tip">
+      <span aria-hidden="true">💡</span>
+      <strong>AI 피드백을 참고하여, 내가 의도한 문장에 맞게 글을 직접 수정해 보세요.</strong>
+    </aside>
+
+    <footer>여행 계획 소개하기 · 하이브리드 피드백 학습 도구</footer>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const writing = document.getElementById("writing");
+      const form = document.getElementById("feedback-form");
+      const clearButton = document.getElementById("clear-button");
+      const charCount = document.getElementById("char-count");
+      const formMessage = document.getElementById("form-message");
+      const feedbackButton = document.getElementById("feedback-button");
+      const aiToggle = document.getElementById("ai-toggle");
+      const modeStatus = document.getElementById("mode-status");
+      const loadingPanel = document.getElementById("loading-panel");
+      const resultCard = document.getElementById("result-card");
+      const originalText = document.getElementById("original-text");
+      const feedbackFlow = document.getElementById("feedback-flow");
+      const reviseButton = document.getElementById("revise-button");
+      const aiNote = document.getElementById("ai-note");
+
+      const spellingRules = [
+        ["becuase","because"], ["beacuse","because"], ["travle","travel"],
+        ["resturant","restaurant"], ["mountian","mountain"],
+        ["beautifull","beautiful"], ["exicited","excited"],
+        ["freind","friend"], ["tommorow","tomorrow"]
+      ];
+
+      const placeRules = [
+        ["korea","Korea"], ["japan","Japan"], ["china","China"],
+        ["jeju","Jeju"], ["seoul","Seoul"], ["busan","Busan"],
+        ["paris","Paris"], ["london","London"], ["france","France"]
+      ];
+
+      function escapeHTML(value){
+        return String(value).replace(/[&<>'"]/g, c => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"
+        })[c]);
+      }
+
+      function updateInput(){
+        const len = writing.value.length;
+        charCount.textContent = `${len} / 800`;
+        clearButton.hidden = len === 0;
+        formMessage.hidden = true;
+        writing.classList.remove("has-error");
+      }
+
+      function showMessage(message){
+        formMessage.textContent = message;
+        formMessage.hidden = false;
+        writing.classList.add("has-error");
+        writing.focus();
+      }
+
+      function pushUnique(list, item){
+        if(!list.some(x => x.key === item.key)) list.push(item);
+      }
+
+      function analyzeRules(text){
+        const normalized = text.replace(/\s+/g," ").trim();
+        const issues = [];
+        const strengths = [];
+
+        const futurePattern = /\b(?:will|(?:am|is|are)\s+going\s+to|plan(?:s)?\s+to|want(?:s)?\s+to)\b/i;
+
+        if(futurePattern.test(normalized)){
+          strengths.push("앞으로의 여행 계획을 나타내는 표현을 사용했어요.");
+        }else{
+          pushUnique(issues,{
+            key:"future",
+            hint:"앞으로 할 일을 나타내는 표현(will, be going to 등)이 있는지 확인해 보세요."
+          });
+        }
+
+        if(/\bbecause\b/i.test(normalized)){
+          strengths.push("because를 사용해 이유를 덧붙였어요.");
+        }
+
+        if(/\b(?:first|then|next|after that|finally)\b/i.test(normalized)){
+          strengths.push("순서를 나타내는 말을 사용해 계획을 이어 썼어요.");
+        }
+
+        if(/\b(?:and|but|so)\b/i.test(normalized)){
+          strengths.push("문장을 연결하는 말을 사용했어요.");
+        }
+
+        spellingRules.forEach(([wrong,right])=>{
+          const m = normalized.match(new RegExp("\\b"+wrong+"\\b","i"));
+          if(m){
+            pushUnique(issues,{
+              key:"spell-"+wrong,
+              hint:`'${m[0]}'의 철자를 다시 확인해 보세요. (${right})`
+            });
+          }
+        });
+
+        if(/\bi\b/.test(normalized)){
+          pushUnique(issues,{
+            key:"capital-i",
+            hint:"나를 뜻하는 I는 항상 대문자로 써요."
+          });
+        }
+
+        placeRules.forEach(([wrong,right])=>{
+          const pattern = new RegExp("\\b"+wrong+"\\b","g");
+          const matches = normalized.match(pattern);
+          if(matches && matches.some(m=>m!==right)){
+            pushUnique(issues,{
+              key:"place-"+wrong,
+              hint:`나라·도시 이름은 대문자로 시작해요. (${right})`
+            });
+          }
+        });
+
+        const patterns = [
+          [/\bI\s+(?:is|are)\b/i,"be-i","I와 어울리는 be동사를 다시 확인해 보세요."],
+          [/\bI\s+going\s+to\b/i,"going-be","be going to 앞에 필요한 be동사를 확인해 보세요."],
+          [/\b(?:want|wants|wanted)\s+(?:visit|go|travel|see|eat|stay|take|buy)\b/i,"want-to","want 뒤에 오는 동사의 형태를 확인해 보세요."],
+          [/\b(?:want|wants|wanted)\s+to\s+(?:visiting|going|traveling|travelling|seeing|eating|staying|taking|buying)\b/i,"want-base","want to 뒤에는 동사원형을 사용해요."],
+          [/\b(?:am|is|are)\s+going\s+(?:visit|go|travel|see|eat|stay|take|buy)\b/i,"going-to","be going to 표현에서 빠진 말이 없는지 확인해 보세요."],
+          [/\bwill\s+(?:going|visiting|traveling|travelling|seeing|eating|staying|taking|visits|goes|travels|sees|eats|stays|takes|buys)\b/i,"will-base","will 뒤에는 동사원형을 사용해요."],
+          [/\b(?:in|at)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i,"day-prep","요일 앞에는 on을 사용해요."],
+          [/\b(?:on|at)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i,"month-prep","월 앞에는 in을 사용해요."],
+          [/\bvisit(?:s|ed)?\s+to\s+[A-Za-z]/i,"visit-to","visit 뒤에는 보통 장소를 바로 써요."],
+          [/\barrive(?:s|d)?\s+to\b/i,"arrive-prep","arrive 뒤의 전치사(in/at)를 확인해 보세요."],
+          [/\b(?:in|on|with)\s+(?:a\s+|the\s+)?(?:bus|train|plane|car|taxi)\b/i,"transport","교통수단으로 이동할 때는 보통 by + 교통수단을 사용해요."],
+          [/\bthere\s+is\s+(?:many|two|three|four|five|several)\b/i,"there-plural","여러 개가 있을 때 There is/are 중 알맞은 형태를 확인해 보세요."],
+          [/\b(?:two|three|four|five|many|several)\s+(?:day|night|place|hotel|restaurant|museum|park|city)\b/i,"plural","두 개 이상이면 셀 수 있는 명사의 복수형을 확인해 보세요."]
+        ];
+
+        patterns.forEach(([regex,key,hint])=>{
+          if(regex.test(normalized)){
+            pushUnique(issues,{key,hint});
+          }
+        });
+
+        const sentences = normalized.match(/[^.!?]+[.!?]?/g) || [];
+        sentences.forEach((raw,index)=>{
+          const s = raw.trim();
+          if(!s) return;
+          const first = s.match(/[A-Za-z]/);
+          if(first && first[0] === first[0].toLowerCase()){
+            pushUnique(issues,{
+              key:"start-"+index,
+              hint:"영어 문장은 대문자로 시작해요."
+            });
+          }
+          if(!/[.!?]$/.test(s)){
+            pushUnique(issues,{
+              key:"punct-"+index,
+              hint:"문장 끝에 알맞은 문장부호를 써 주세요."
+            });
+          }
+        });
+
+        if(!strengths.length){
+          strengths.push("내 생각을 영어로 직접 문장으로 작성했어요.");
+        }
+
+        return {
+          strengths: strengths.slice(0,2),
+          issues: issues.slice(0,4),
+          sentenceCount: sentences.length
+        };
+      }
+
+      // API 없이 문맥을 추가 확인하는 휴리스틱 기반 'AI 문맥 점검' 시뮬레이션
+      function analyzeContext(text){
+        const normalized = text.replace(/\s+/g," ").trim();
+        const contextHints = [];
+
+        if(/\bI\s+am\s+(?:delicious|tasty)\b/i.test(normalized)){
+          contextHints.push("delicious/tasty는 보통 음식의 맛을 설명할 때 사용해요. 사람을 설명하는 말인지 다시 생각해 보세요.");
+        }
+
+        if(/\b(?:see|watch)\s+(?:my|the)\s+hotel\b/i.test(normalized)){
+          contextHints.push("호텔에서 무엇을 하려는지 의미가 더 분명하게 전달되는 동사를 생각해 보세요.");
+        }
+
+        if(/\bvisit\s+there\b/i.test(normalized)){
+          contextHints.push("there를 써도 되지만, 앞 문장에 장소가 나오지 않았다면 여행 장소를 더 구체적으로 써 보세요.");
+        }
+
+        if(/\btravel(?:s|ed|led)?\s+(?!to\b)(?:[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?|there)\b/.test(normalized)){
+          contextHints.push("travel 뒤에 목적지가 바로 왔어요. 보통 'travel to + 장소' 형태인지 확인해 보세요.");
+        }
+
+        const willCount = (normalized.match(/\bI\s+will\b/gi) || []).length;
+        const goingCount = (normalized.match(/\bI\s+am\s+going\s+to\b/gi) || []).length;
+        if(willCount >= 3 || goingCount >= 3){
+          contextHints.push("같은 미래 표현이 반복되고 있어요. 문장 연결이나 표현의 변화를 생각해 보세요.");
+        }
+
+        if(text.length > 80 && !/\bbecause\b/i.test(normalized)){
+          contextHints.push("여행 장소나 활동을 선택한 이유를 한 문장 덧붙이면 내용이 더 구체적일 수 있어요.");
+        }
+
+        if(!/\b(?:first|then|next|after that|finally)\b/i.test(normalized) && /[.!?].+[.!?]/.test(normalized)){
+          contextHints.push("여러 계획이 있다면 First, Next, Finally 같은 순서 표현을 활용할 수 있어요.");
+        }
+
+        if(!contextHints.length){
+          contextHints.push("문장의 의미는 비교적 잘 전달돼요. 내가 말하려는 여행 장소·활동·이유가 충분히 구체적인지 한 번 더 확인해 보세요.");
+        }
+
+        return contextHints.slice(0,2);
+      }
+
+      function looksLikeWritingRequest(text){
+        return /(?:대신\s*써|써\s*줘|작성해\s*줘|완성해\s*줘|write .* for me|do .* for me)/i.test(text);
+      }
+
+      function renderFeedback(text, ruleResult, useContext){
+        originalText.textContent = text;
+
+        const feedback = [];
+
+        feedback.push({
+          type:"praise",
+          tag:"칭찬/격려",
+          text:ruleResult.strengths[0]
+        });
+
+        if(ruleResult.issues.length){
+          ruleResult.issues.slice(0,3).forEach(issue=>{
+            feedback.push({
+              type:"hint",
+              tag:"수정 힌트",
+              text:issue.hint
+            });
+          });
+        }else{
+          feedback.push({
+            type:"hint",
+            tag:"수정 힌트",
+            text:"기본 문법 점검에서 뚜렷한 오류가 보이지 않아요. 표현이 내가 의도한 뜻과 맞는지 확인해 보세요."
+          });
+        }
+
+        if(useContext){
+          analyzeContext(text).forEach(hint=>{
+            feedback.push({
+              type:"check",
+              tag:"확인 포인트",
+              text:hint
+            });
+          });
+          aiNote.hidden = false;
+          aiNote.textContent = "AI 문맥 점검 모드: 기본 문법 규칙에 문맥·자연스러움·자주 쓰는 표현 점검을 추가했습니다.";
+        }else{
+          feedback.push({
+            type:"check",
+            tag:"확인 포인트",
+            text:"문장을 소리 내어 읽으며 의미가 자연스럽게 이어지는지 확인해 보세요."
+          });
+          aiNote.hidden = true;
+          aiNote.textContent = "";
+        }
+
+        feedbackFlow.innerHTML = feedback.slice(0,5).map(item=>`
+          <div class="feedback-item ${item.type}">
+            <span class="tag">${item.tag}</span>
+            <p>${escapeHTML(item.text)}</p>
+          </div>
+        `).join("");
+
+        resultCard.hidden = false;
+        try{ resultCard.focus({preventScroll:true}); }catch{ resultCard.focus(); }
+        resultCard.scrollIntoView({behavior:"smooth",block:"start"});
+      }
+
+      writing.addEventListener("input",updateInput);
+
+      clearButton.addEventListener("click",()=>{
+        writing.value="";
+        updateInput();
+        resultCard.hidden=true;
+        writing.focus();
+      });
+
+      aiToggle.addEventListener("change",()=>{
+        modeStatus.textContent = aiToggle.checked
+          ? "기본 문법 + 문맥·자연스러움 점검"
+          : "기본 문법 점검만 사용";
+      });
+
+      reviseButton.addEventListener("click",()=>{
+        writing.focus();
+        writing.setSelectionRange(writing.value.length,writing.value.length);
+        writing.scrollIntoView({behavior:"smooth",block:"center"});
+      });
+
+      form.addEventListener("submit",(event)=>{
+        event.preventDefault();
+
+        const text = writing.value.trim();
+
+        if(!text){
+          showMessage("먼저 나의 여행 계획 영어 문장을 입력하세요.");
+          return;
+        }
+
+        if(!/[A-Za-z]/.test(text)){
+          showMessage("영어 문장을 한 문장 이상 입력하세요.");
+          return;
+        }
+
+        if(looksLikeWritingRequest(text)){
+          showMessage("문장을 대신 써 주지는 않습니다. 내가 직접 쓴 문장을 입력하세요.");
+          return;
+        }
+
+        feedbackButton.disabled=true;
+        resultCard.hidden=true;
+        loadingPanel.hidden=false;
+
+        const ruleResult = analyzeRules(text);
+
+        window.setTimeout(()=>{
+          loadingPanel.hidden=true;
+          renderFeedback(text,ruleResult,aiToggle.checked);
+          feedbackButton.disabled=false;
+        }, 650);
+      });
+
+      writing.addEventListener("keydown",(event)=>{
+        if((event.ctrlKey || event.metaKey) && event.key==="Enter"){
+          form.requestSubmit();
+        }
+      });
+
+      updateInput();
+    })();
+  </script>
+</body>
+</html>
