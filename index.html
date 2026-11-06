@@ -507,7 +507,7 @@
       color:#7b6992;
     }
 
-    .feedback-item p{margin:0}
+    .feedback-item p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75}
 
     .ai-note{
       margin-top:10px;
@@ -700,15 +700,15 @@
 
       <div class="notice">
         <p>• 개인정보(이름·학번·전화번호)는 입력하지 마세요.</p>
-        <p>• AI는 힌트만 줍니다. 배운 규칙을 바탕으로 직접 문장을 다듬어 보세요.</p>
+        <p>• 피드백 요청 시 작성한 글이 Gemini 서비스로 전송됩니다. AI의 제안을 확인하고 직접 수정하세요.</p>
       </div>
 
       <label class="toggle-card">
         <input type="checkbox" id="ai-toggle" />
         <span>
-          <strong>AI 문맥 점검 함께 사용 (문장의 자연스러움 추가 확인)</strong>
-          <small>기본 문법 점검에 문맥·자연스러움 확인을 추가합니다.</small>
-          <span class="mode-status" id="mode-status">기본 문법 점검만 사용</span>
+          <strong>전체 문맥 검토 함께 사용 (Gemini AI)</strong>
+          <small>기본 문법은 항상 Gemini로 점검하며, 선택하면 글 전체의 흐름과 자연스러움도 검토합니다.</small>
+          <span class="mode-status" id="mode-status">Gemini 기본 문법 점검</span>
         </span>
       </label>
 
@@ -721,7 +721,7 @@
 
     <section class="loading-panel" id="loading-panel" aria-live="polite" hidden>
       <div class="spinner" aria-hidden="true"></div>
-      <strong>문장을 확인하고 있어요.</strong>
+      <strong>Gemini AI가 문장을 확인하고 있어요.</strong>
     </section>
 
     <section class="card result-card" id="result-card" hidden aria-live="polite" tabindex="-1">
@@ -762,7 +762,7 @@
       <strong>AI 피드백을 참고하여, 내가 의도한 문장에 맞게 글을 직접 수정해 보세요.</strong>
     </aside>
 
-    <footer>여행 계획 소개하기 · 하이브리드 피드백 학습 도구</footer>
+    <footer>여행 계획 소개하기 · Gemini AI 영어 코치</footer>
   </main>
 
   <script>
@@ -930,114 +930,119 @@
         };
       }
 
-      // API 없이 문맥을 추가 확인하는 휴리스틱 기반 'AI 문맥 점검' 시뮬레이션
-      function analyzeContext(text){
-        const normalized = text.replace(/\s+/g," ").trim();
-        const contextHints = [];
-
-        if(/\bI\s+am\s+(?:delicious|tasty)\b/i.test(normalized)){
-          contextHints.push("delicious/tasty는 보통 음식의 맛을 설명할 때 사용해요. 사람을 설명하는 말인지 다시 생각해 보세요.");
-        }
-
-        if(/\b(?:see|watch)\s+(?:my|the)\s+hotel\b/i.test(normalized)){
-          contextHints.push("호텔에서 무엇을 하려는지 의미가 더 분명하게 전달되는 동사를 생각해 보세요.");
-        }
-
-        if(/\bvisit\s+there\b/i.test(normalized)){
-          contextHints.push("there를 써도 되지만, 앞 문장에 장소가 나오지 않았다면 여행 장소를 더 구체적으로 써 보세요.");
-        }
-
-        if(/\btravel(?:s|ed|led)?\s+(?!to\b)(?:[A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?|there)\b/.test(normalized)){
-          contextHints.push("travel 뒤에 목적지가 바로 왔어요. 보통 'travel to + 장소' 형태인지 확인해 보세요.");
-        }
-
-        const willCount = (normalized.match(/\bI\s+will\b/gi) || []).length;
-        const goingCount = (normalized.match(/\bI\s+am\s+going\s+to\b/gi) || []).length;
-        if(willCount >= 3 || goingCount >= 3){
-          contextHints.push("같은 미래 표현이 반복되고 있어요. 문장 연결이나 표현의 변화를 생각해 보세요.");
-        }
-
-        if(text.length > 80 && !/\bbecause\b/i.test(normalized)){
-          contextHints.push("여행 장소나 활동을 선택한 이유를 한 문장 덧붙이면 내용이 더 구체적일 수 있어요.");
-        }
-
-        if(!/\b(?:first|then|next|after that|finally)\b/i.test(normalized) && /[.!?].+[.!?]/.test(normalized)){
-          contextHints.push("여러 계획이 있다면 First, Next, Finally 같은 순서 표현을 활용할 수 있어요.");
-        }
-
-        if(!contextHints.length){
-          contextHints.push("문장의 의미는 비교적 잘 전달돼요. 내가 말하려는 여행 장소·활동·이유가 충분히 구체적인지 한 번 더 확인해 보세요.");
-        }
-
-        return contextHints.slice(0,2);
-      }
+      // GitHub Pages에서 Worker를 호출합니다. Gemini API 키는 웹페이지에 포함하지 않습니다.
+      const WORKER_URL = "https://trip-english-gemini.e4m4ham70.workers.dev";
+      let requestId = 0;
 
       function looksLikeWritingRequest(text){
         return /(?:대신\s*써|써\s*줘|작성해\s*줘|완성해\s*줘|write .* for me|do .* for me)/i.test(text);
       }
 
-      function renderFeedback(text, ruleResult, useContext){
+      function showResult(text){
         originalText.textContent = text;
-
-        const feedback = [];
-
-        feedback.push({
-          type:"praise",
-          tag:"칭찬/격려",
-          text:ruleResult.strengths[0]
-        });
-
-        if(ruleResult.issues.length){
-          ruleResult.issues.slice(0,3).forEach(issue=>{
-            feedback.push({
-              type:"hint",
-              tag:"수정 힌트",
-              text:issue.hint
-            });
-          });
-        }else{
-          feedback.push({
-            type:"hint",
-            tag:"수정 힌트",
-            text:"기본 문법 점검에서 뚜렷한 오류가 보이지 않아요. 표현이 내가 의도한 뜻과 맞는지 확인해 보세요."
-          });
-        }
-
-        if(useContext){
-          analyzeContext(text).forEach(hint=>{
-            feedback.push({
-              type:"check",
-              tag:"확인 포인트",
-              text:hint
-            });
-          });
-          aiNote.hidden = false;
-          aiNote.textContent = "AI 문맥 점검 모드: 기본 문법 규칙에 문맥·자연스러움·자주 쓰는 표현 점검을 추가했습니다.";
-        }else{
-          feedback.push({
-            type:"check",
-            tag:"확인 포인트",
-            text:"문장을 소리 내어 읽으며 의미가 자연스럽게 이어지는지 확인해 보세요."
-          });
-          aiNote.hidden = true;
-          aiNote.textContent = "";
-        }
-
-        feedbackFlow.innerHTML = feedback.slice(0,5).map(item=>`
-          <div class="feedback-item ${item.type}">
-            <span class="tag">${item.tag}</span>
-            <p>${escapeHTML(item.text)}</p>
-          </div>
-        `).join("");
-
         resultCard.hidden = false;
-        try{ resultCard.focus({preventScroll:true}); }catch{ resultCard.focus(); }
+        try { resultCard.focus({preventScroll:true}); } catch { resultCard.focus(); }
         resultCard.scrollIntoView({behavior:"smooth",block:"start"});
       }
 
-      writing.addEventListener("input",updateInput);
+      // Gemini 응답의 [잘한 점] 등 제목을 분리해 읽기 쉽게 표시합니다.
+      function parseGeminiSections(answer){
+        const known = {
+          "잘한 점": {type:"praise",tag:"잘한 점"},
+          "기본 문법 점검": {type:"hint",tag:"기본 문법"},
+          "전체 문맥 검토": {type:"check",tag:"전체 문맥"},
+          "스스로 수정하기": {type:"check",tag:"직접 수정"}
+        };
+        const text = String(answer || "").replace(/\r\n?/g,"\n").trim();
+        const pattern = /\[\s*(잘한 점|기본 문법 점검|전체 문맥 검토|스스로 수정하기)\s*\]/g;
+        const matches = [...text.matchAll(pattern)];
+        if(!matches.length) return [{type:"check",tag:"Gemini 피드백",text}];
+        const sections=[];
+        if(matches[0].index>0 && text.slice(0,matches[0].index).trim()){
+          sections.push({type:"check",tag:"AI 안내",text:text.slice(0,matches[0].index).trim()});
+        }
+        matches.forEach((match,index)=>{
+          const begin=match.index+match[0].length;
+          const finish=index+1<matches.length?matches[index+1].index:text.length;
+          const content=text.slice(begin,finish).trim();
+          if(content) sections.push({...known[match[1]],text:content});
+        });
+        return sections;
+      }
+
+      function drawItems(items){
+        feedbackFlow.replaceChildren();
+        items.forEach(item=>{
+          const div=document.createElement("div");
+          div.className="feedback-item "+item.type;
+          const tag=document.createElement("span");
+          tag.className="tag";
+          tag.textContent=item.tag;
+          const p=document.createElement("p");
+          p.textContent=item.text;
+          div.append(tag,p);
+          feedbackFlow.appendChild(div);
+        });
+      }
+
+      function renderGeminiFeedback(original,answer,useContext){
+        drawItems(parseGeminiSections(answer));
+        aiNote.hidden=false;
+        aiNote.textContent=useContext
+          ? "Gemini AI의 기본 문법 및 전체 문맥 검토 결과입니다. 제안이 정확한지 확인한 후 직접 고쳐 보세요."
+          : "Gemini AI의 기본 문법 점검 결과입니다. 제안이 정확한지 확인한 후 직접 고쳐 보세요.";
+        showResult(original);
+      }
+
+      function renderFallbackFeedback(original){
+        const rules=analyzeRules(original);
+        const items=[{type:"praise",tag:"잘한 점",text:rules.strengths[0]}];
+        if(rules.issues.length){
+          rules.issues.slice(0,3).forEach(issue=>items.push({type:"hint",tag:"규칙 힌트",text:issue.hint}));
+        }else{
+          items.push({type:"check",tag:"확인 포인트",text:"간단한 규칙 점검에서 뚜렷한 오류를 발견하지 못했어요. Gemini 검토 결과는 아닙니다."});
+        }
+        drawItems(items);
+        aiNote.hidden=false;
+        aiNote.textContent="Gemini 연결에 실패하여 임시로 기본 규칙 점검을 표시했습니다. 정확한 AI 피드백은 잠시 후 다시 요청해 주세요.";
+        showResult(original);
+      }
+
+      async function requestGemini(text,mode){
+        const controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),70000);
+        try{
+          const response=await fetch(WORKER_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({text,mode}),
+            signal:controller.signal,
+            cache:"no-store"
+          });
+          let data;
+          try{data=await response.json();}catch{throw new Error("서버 응답 형식을 확인할 수 없습니다.");}
+          if(!response.ok || !data || data.success!==true || typeof data.feedback!=="string" || !data.feedback.trim()){
+            throw new Error(data?.error || "AI 피드백을 받지 못했습니다.");
+          }
+          return data.feedback;
+        }finally{
+          clearTimeout(timeout);
+        }
+      }
+
+      writing.addEventListener("input",()=>{
+        if(!loadingPanel.hidden){
+          requestId++;
+          loadingPanel.hidden=true;
+          feedbackButton.disabled=false;
+        }
+        updateInput();
+      });
 
       clearButton.addEventListener("click",()=>{
+        requestId++;
+        feedbackButton.disabled=false;
+        loadingPanel.hidden=true;
         writing.value="";
         updateInput();
         resultCard.hidden=true;
@@ -1046,8 +1051,8 @@
 
       aiToggle.addEventListener("change",()=>{
         modeStatus.textContent = aiToggle.checked
-          ? "기본 문법 + 문맥·자연스러움 점검"
-          : "기본 문법 점검만 사용";
+          ? "Gemini 기본 문법 + 전체 문맥 검토"
+          : "Gemini 기본 문법 점검";
       });
 
       reviseButton.addEventListener("click",()=>{
@@ -1056,37 +1061,28 @@
         writing.scrollIntoView({behavior:"smooth",block:"center"});
       });
 
-      form.addEventListener("submit",(event)=>{
+      form.addEventListener("submit",async event=>{
         event.preventDefault();
-
-        const text = writing.value.trim();
-
-        if(!text){
-          showMessage("먼저 나의 여행 계획 영어 문장을 입력하세요.");
-          return;
-        }
-
-        if(!/[A-Za-z]/.test(text)){
-          showMessage("영어 문장을 한 문장 이상 입력하세요.");
-          return;
-        }
-
+        const text=writing.value.trim();
+        if(!text){showMessage("먼저 나의 여행 계획 영어 문장을 입력하세요.");return;}
+        if(!/[A-Za-z]/.test(text)){showMessage("영어 문장을 한 문장 이상 입력하세요.");return;}
         if(looksLikeWritingRequest(text)){
-          showMessage("문장을 대신 써 주지는 않습니다. 내가 직접 쓴 문장을 입력하세요.");
-          return;
+          showMessage("문장을 대신 써 주지는 않습니다. 내가 직접 쓴 문장을 입력하세요.");return;
         }
-
+        const useContext=aiToggle.checked;
+        const current=++requestId;
         feedbackButton.disabled=true;
         resultCard.hidden=true;
         loadingPanel.hidden=false;
-
-        const ruleResult = analyzeRules(text);
-
-        window.setTimeout(()=>{
-          loadingPanel.hidden=true;
-          renderFeedback(text,ruleResult,aiToggle.checked);
-          feedbackButton.disabled=false;
-        }, 650);
+        try{
+          const answer=await requestGemini(text,useContext?"full":"grammar");
+          if(current===requestId) renderGeminiFeedback(text,answer,useContext);
+        }catch(error){
+          console.error("Gemini feedback error:",error.message);
+          if(current===requestId) renderFallbackFeedback(text);
+        }finally{
+          if(current===requestId){loadingPanel.hidden=true;feedbackButton.disabled=false;}
+        }
       });
 
       writing.addEventListener("keydown",(event)=>{
