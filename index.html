@@ -930,6 +930,52 @@
         };
       }
 
+      // 필수 문법 검사: AI가 오류를 빠뜨려도 명백한 오류를 학생에게 표시합니다.
+      // 규칙으로 확신하기 어려운 표현은 오류로 단정하지 않습니다.
+      function checkCoreGrammar(original){
+        const issues=[];
+        const add=(before,after,reason)=>{
+          const key=before.toLowerCase()+"|"+after.toLowerCase();
+          if(!issues.some(x=>x.key===key)) issues.push({key,before,after,reason});
+        };
+        const sentences=original.split(/(?<=[.!?])\s+|\n+/).map(x=>x.trim()).filter(Boolean);
+        const beGoing=/\b(I|we|you|they|he|she|it)\s+be\s+going\s+to\b/gi;
+        for(const m of original.matchAll(beGoing)){
+          const subject=m[1];
+          const be=/^I$/i.test(subject)?"am":/^(he|she|it)$/i.test(subject)?"is":"are";
+          add(m[0],subject+" "+be+" going to","be going to 앞의 be는 주어에 맞는 am/is/are로 바꿔요.");
+        }
+        const missingBe=/\b(I|we|you|they|he|she|it)\s+going\s+to\s+(?:[a-z]+)\b/gi;
+        for(const m of original.matchAll(missingBe)){
+          const subject=m[1];
+          const be=/^I$/i.test(subject)?"am":/^(he|she|it)$/i.test(subject)?"is":"are";
+          add(m[0],m[0].replace(/\s+going\s+to/i," "+be+" going to"),"be going to 앞에 알맞은 be동사가 필요해요.");
+        }
+        const thirdPerson=/\b(he|she|it)\s+(look|like|want|need|visit|eat|play|live|work|stay|go|have)\b/gi;
+        const thirdForms={look:"looks",like:"likes",want:"wants",need:"needs",visit:"visits",eat:"eats",play:"plays",live:"lives",work:"works",stay:"stays",go:"goes",have:"has"};
+        for(const m of original.matchAll(thirdPerson)){
+          const prefix=original.slice(Math.max(0,m.index-12),m.index);
+          if(/\b(?:will|can|may|must|should)\s*$/i.test(prefix))continue;
+          add(m[0],m[1]+" "+thirdForms[m[2].toLowerCase()],"현재형에서 주어가 he/she/it이면 일반동사의 형태를 확인해요.");
+        }
+        const modalIng=/\b(will|can|must|should)\s+(going|eating|visiting|seeing|staying|taking|playing|looking|buying|traveling|travelling)\b/gi;
+        const bases={going:"go",eating:"eat",visiting:"visit",seeing:"see",staying:"stay",taking:"take",playing:"play",looking:"look",buying:"buy",traveling:"travel",travelling:"travel"};
+        for(const m of original.matchAll(modalIng))add(m[0],m[1]+" "+bases[m[2].toLowerCase()],"조동사 뒤에는 동사원형을 사용해요.");
+        const wantBare=/\b(want|wants)\s+(visit|go|eat|see|stay|travel|buy|play|take|meet)\b/gi;
+        for(const m of original.matchAll(wantBare))add(m[0],m[1]+" to "+m[2],"want 뒤에 동사를 연결할 때는 보통 want to + 동사원형을 사용해요.");
+        const themeTypo=/\btema\s+park\b/gi;
+        for(const m of original.matchAll(themeTypo))add(m[0],"theme park","놀이공원은 영어로 theme park라고 써요.");
+        const missingArticle=/\b(it|this|that)\s+is\s+(?:(?:very|really)\s+)?(tema|theme|amusement)\s+park\b/gi;
+        for(const m of original.matchAll(missingArticle))add(m[0],m[1]+" is a "+(m[2].toLowerCase()==="tema"?"theme":m[2])+" park","단수 셀 수 있는 명사 park 앞에는 관사 a가 필요해요.");
+        for(const sentence of sentences){
+          if(!/^[a-z]/.test(sentence))continue;
+          add(sentence.slice(0,Math.min(35,sentence.length)),"문장의 첫 글자를 대문자로","영어 문장은 대문자로 시작해요.");
+        }
+        if(/\bsydney\b/.test(original))add("sydney","Sydney","도시 이름 Sydney는 대문자로 시작해요.");
+        if(/\bi\b/.test(original))add("i","I","나를 뜻하는 I는 항상 대문자예요.");
+        return issues;
+      }
+
       // GitHub Pages에서 Worker를 호출합니다. Gemini API 키는 웹페이지에 포함하지 않습니다.
       const WORKER_URL = "https://trip-english-gemini.e4m4ham70.workers.dev";
       let requestId = 0;
@@ -986,17 +1032,38 @@
       }
 
       function renderGeminiFeedback(original,answer,useContext){
-        drawItems(parseGeminiSections(answer));
+        const sections=parseGeminiSections(answer);
+        const core=checkCoreGrammar(original);
+        const items=[];
+        // AI 결과의 정확성이나 제목 형식에 관계없이 확실한 문법 오류를 먼저 제공합니다.
+        core.forEach(item=>items.push({
+          type:"hint",tag:"문법 수정",
+          text:`${item.before} → ${item.after}  |  ${item.reason}`
+        }));
+        // AI 답변도 별도로 제공하되, 문법 검사가 전부 통과한 것처럼 보이지 않게 합니다.
+        const aiGrammar=sections.filter(x=>x.tag==="기본 문법");
+        const otherSections=sections.filter(x=>x.tag!=="기본 문법");
+        if(aiGrammar.length){
+          aiGrammar.forEach(x=>items.push({...x,tag:"Gemini 문법"}));
+        }else if(!core.length){
+          items.push({type:"hint",tag:"문법 확인",text:"확인된 주요 문법 오류는 없습니다. AI 검토 내용도 함께 확인하세요."});
+        }else{
+          items.push({type:"check",tag:"점검 안내",text:"AI가 문법 오류를 모두 찾지 못할 수 있어, 기본 규칙으로 확인한 수정 사항을 먼저 보여줍니다."});
+        }
+        otherSections.forEach(x=>items.push(x));
+        if(items.length===0)items.push({type:"check",tag:"확인",text:"AI 응답에서 피드백을 추출하지 못했습니다. 다시 요청해 주세요."});
+        drawItems(items);
         aiNote.hidden=false;
         aiNote.textContent=useContext
-          ? "Gemini AI의 기본 문법 및 전체 문맥 검토 결과입니다. 제안이 정확한지 확인한 후 직접 고쳐 보세요."
-          : "Gemini AI의 기본 문법 점검 결과입니다. 제안이 정확한지 확인한 후 직접 고쳐 보세요.";
+          ? "명확한 문법 오류는 기본 규칙으로 먼저 확인하고, Gemini AI가 문법과 전체 문맥을 추가로 점검했습니다."
+          : "명확한 문법 오류는 기본 규칙으로 먼저 확인하고, Gemini AI가 문법을 추가로 점검했습니다.";
         showResult(original);
       }
 
       function renderFallbackFeedback(original){
         const rules=analyzeRules(original);
         const items=[{type:"praise",tag:"잘한 점",text:rules.strengths[0]}];
+        checkCoreGrammar(original).forEach(issue=>items.push({type:"hint",tag:"문법 수정",text:`${issue.before} → ${issue.after}  |  ${issue.reason}`}));
         if(rules.issues.length){
           rules.issues.slice(0,3).forEach(issue=>items.push({type:"hint",tag:"규칙 힌트",text:issue.hint}));
         }else{
